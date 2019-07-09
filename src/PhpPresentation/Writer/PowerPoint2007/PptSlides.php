@@ -522,10 +522,11 @@ class PptSlides extends AbstractSlide {
 		return $objWriter->getData ();
 	}
 	
+	
 	/**
 	 *
-	 * @param XMLWriter $objWriter        	
-	 * @param Slide $oSlide        	
+	 * @param XMLWriter $objWriter
+	 * @param Slide $oSlide
 	 */
 	protected function writeSlideAnimations(XMLWriter $objWriter, Slide $oSlide) {
 		$arrayAnimations = $oSlide->getAnimations ();
@@ -537,11 +538,14 @@ class PptSlides extends AbstractSlide {
 		$shapeId = 1;
 		$idCount = 1;
 		$hashToIdMap = array ();
-		$arrayAnimationIds = array ();
+		$arrayAnimationIds[] = array ();
 		
+		// set ID for each shape
 		foreach ( $oSlide->getShapeCollection () as $shape ) {
-			$hashToIdMap [$shape->getHashCode ()] = ++ $shapeId;
+			$hashToIdMap [$shape->getHashCode ()] =  ++$shapeId;
 		}
+		
+		//set animation same id as the shape in the animation
 		foreach ( $arrayAnimations as $oAnimation ) {
 			foreach ( $oAnimation->getShapeCollection () as $oShape ) {
 				$arrayAnimationIds [] = $hashToIdMap [$oShape->getHashCode ()];
@@ -560,6 +564,7 @@ class PptSlides extends AbstractSlide {
 		$objWriter->writeAttribute ( 'dur', 'indefinite' );
 		$objWriter->writeAttribute ( 'restart', 'never' );
 		$objWriter->writeAttribute ( 'nodeType', 'tmRoot' );
+		
 		// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst
 		$objWriter->startElement ( 'p:childTnLst' );
 		
@@ -570,261 +575,554 @@ class PptSlides extends AbstractSlide {
 				$shape = $oShape;
 			}
 			
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq
-			$objWriter->startElement ( 'p:seq' );
-			$objWriter->writeAttribute ( 'concurrent', '1' );
-			$objWriter->writeAttribute ( 'nextAc', 'seek' );
+			if ($shape instanceof Video || $shape instanceof Audio) {
+				
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq
+				$objWriter->startElement ( 'p:seq' );
+				$objWriter->writeAttribute ( 'concurrent', '1' );
+				$objWriter->writeAttribute ( 'nextAc', 'seek' );
 			
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn
-			$objWriter->startElement ( 'p:cTn' );
-			$objWriter->writeAttribute ( 'id', $idCount ++ );
-			$objWriter->writeAttribute ( 'restart', 'whenNotActive' );
-			$objWriter->writeAttribute ( 'fill', 'hold' );
-			$objWriter->writeAttribute ( 'evtFilter', 'cancelBubble' );
-			$objWriter->writeAttribute ( 'nodeType', 'interactiveSeq' );
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn
+				$objWriter->startElement ( 'p:cTn' );
+				$objWriter->writeAttribute ( 'id', $idCount ++ );
+				$objWriter->writeAttribute ( 'restart', 'whenNotActive' );
+				$objWriter->writeAttribute ( 'fill', 'hold' );
+				$objWriter->writeAttribute ( 'evtFilter', 'cancelBubble' );
+				$objWriter->writeAttribute ( 'nodeType', 'interactiveSeq' );
 			
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:stCondLst
-			$objWriter->startElement ( 'p:stCondLst' );
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:stCondLst/p:cond
-			$objWriter->startElement ( 'p:cond' );
-			$objWriter->writeAttribute ( 'evt', 'onClick' );
-			$objWriter->writeAttribute ( 'delay', '0' );
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:stCondLst
+				$objWriter->startElement ( 'p:stCondLst' );
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:stCondLst/p:cond
+				$objWriter->startElement ( 'p:cond' );
+				$objWriter->writeAttribute ( 'evt', 'onClick' );
+				$objWriter->writeAttribute ( 'delay', '0' );
 			
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:stCondLst/p:cond/p:tgtEl
-			$objWriter->startElement ( 'p:tgtEl' );
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:stCondLst/p:cond/p:tgtEl
+				$objWriter->startElement ( 'p:tgtEl' );
 			
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:stCondLst/p:cond/p:tgtEl/p:spTgt
-			$objWriter->startElement ( 'p:spTgt' );
-			$objWriter->writeAttribute ( 'spid', $shapeId );
-			$objWriter->endElement ();
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:stCondLst/p:cond/p:tgtEl
-			$objWriter->endElement ();
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:stCondLst/p:cond/
-			$objWriter->endElement ();
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:stCondLst
-			$objWriter->endElement ();
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:stCondLst/p:cond/p:tgtEl/p:spTgt
+				$objWriter->startElement ( 'p:spTgt' );
+				$objWriter->writeAttribute ( 'spid', $shapeId );
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:stCondLst/p:cond/p:tgtEl
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:stCondLst/p:cond/
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:stCondLst
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/
 			
-			$objWriter->startElement ( 'p:endSync' );
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:endSync/
-			$objWriter->writeAttribute ( 'evt', 'end' );
-			$objWriter->writeAttribute ( 'delay', 0 );
+				$objWriter->startElement ( 'p:endSync' );
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:endSync/
+				$objWriter->writeAttribute ( 'evt', 'end' );
+				$objWriter->writeAttribute ( 'delay', 0 );
 			
-			$objWriter->startElement ( 'p:rtn' );
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:endSync/p:rtn/
-			$objWriter->writeAttribute ( 'val', 'all' );
-			$objWriter->endElement ();
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:endSync/
-			$objWriter->endElement ();
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/
+				$objWriter->startElement ( 'p:rtn' );
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:endSync/p:rtn/
+				$objWriter->writeAttribute ( 'val', 'all' );
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:endSync/
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/
 			
-			$objWriter->startElement ( 'p:childTnLst' );
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par
-			$objWriter->startElement ( 'p:par' );
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn
-			$objWriter->startElement ( 'p:cTn' );
-			$objWriter->writeAttribute ( 'id', $idCount ++ );
-			$objWriter->writeAttribute ( 'fill', 'hold' );
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:stCondLst
-			$objWriter->startElement ( 'p:stCondLst' );
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:stCondLst/p:cond
-			$objWriter->startElement ( 'p:cond' );
-			$objWriter->writeAttribute ( 'delay', '0' );
-			$objWriter->endElement ();
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn\##p:stCondLst
-			$objWriter->endElement ();
+				$objWriter->startElement ( 'p:childTnLst' );
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par
+				$objWriter->startElement ( 'p:par' );
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn
+				$objWriter->startElement ( 'p:cTn' );
+				$objWriter->writeAttribute ( 'id', $idCount ++ );
+				$objWriter->writeAttribute ( 'fill', 'hold' );
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:stCondLst
+				$objWriter->startElement ( 'p:stCondLst' );
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:stCondLst/p:cond
+				$objWriter->startElement ( 'p:cond' );
+				$objWriter->writeAttribute ( 'delay', '0' );
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn\##p:stCondLst
+				$objWriter->endElement ();
 			
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst
-			$objWriter->startElement ( 'p:childTnLst' );
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst
+				$objWriter->startElement ( 'p:childTnLst' );
 			
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par
-			$objWriter->startElement ( 'p:par' );
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par
+				$objWriter->startElement ( 'p:par' );
 			
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn
-			$objWriter->startElement ( 'p:cTn' );
-			$objWriter->writeAttribute ( 'id', $idCount ++ );
-			$objWriter->writeAttribute ( 'fill', 'hold' );
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn
+				$objWriter->startElement ( 'p:cTn' );
+				$objWriter->writeAttribute ( 'id', $idCount ++ );
+				$objWriter->writeAttribute ( 'fill', 'hold' );
 			
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:stCondLst
-			$objWriter->startElement ( 'p:stCondLst' );
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:stCondLst/p:cond
-			$objWriter->startElement ( 'p:cond' );
-			$objWriter->writeAttribute ( 'delay', '0' );
-			$objWriter->endElement ();
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:stCondLst
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:stCondLst
+				$objWriter->startElement ( 'p:stCondLst' );
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:stCondLst/p:cond
+				$objWriter->startElement ( 'p:cond' );
+				$objWriter->writeAttribute ( 'delay', '0' );
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:stCondLst
 			
-			$objWriter->endElement ();
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn
 			
-			$objWriter->startElement ( 'p:childTnLst' );
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst
-			$objWriter->startElement ( 'p:par' );
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par
+				$objWriter->startElement ( 'p:childTnLst' );
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst
+				$objWriter->startElement ( 'p:par' );
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par
 			
-			$objWriter->startElement ( 'p:cTn' );
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn
-			$objWriter->writeAttribute ( 'id', $idCount ++ );
-			$objWriter->writeAttribute ( 'presetID', '2' );
-			$objWriter->writeAttribute ( 'presetClass', 'mediacall' );
-			$objWriter->writeAttribute ( 'presetSubtype', '0' );
-			$objWriter->writeAttribute ( 'fill', 'hold' );
-			$objWriter->writeAttribute ( 'nodeType', 'clickEffect' );
+				$objWriter->startElement ( 'p:cTn' );
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn
+				$objWriter->writeAttribute ( 'id', $idCount ++ );
+				$objWriter->writeAttribute ( 'presetID', '2' );
+				$objWriter->writeAttribute ( 'presetClass', 'mediacall' );
+				$objWriter->writeAttribute ( 'presetSubtype', '0' );
+				$objWriter->writeAttribute ( 'fill', 'hold' );
+				$objWriter->writeAttribute ( 'nodeType', 'clickEffect' );
 			
-			$objWriter->startElement ( 'p:stCondLst' );
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:stCondLst
-			$objWriter->startElement ( 'p:cond' );
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:stCondLst/p:cond
-			$objWriter->writeAttribute ( 'delay', '0' );
-			$objWriter->endElement ();
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:stCondLst
+				$objWriter->startElement ( 'p:stCondLst' );
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:stCondLst
+				$objWriter->startElement ( 'p:cond' );
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:stCondLst/p:cond
+				$objWriter->writeAttribute ( 'delay', '0' );
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:stCondLst
 			
-			$objWriter->endElement ();
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn
 			
-			$objWriter->startElement ( 'p:childTnLst' );
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst
+				$objWriter->startElement ( 'p:childTnLst' );
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst
 			
-			$objWriter->startElement ( 'p:cmd' );
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:cmd
-			$objWriter->writeAttribute ( 'type', 'call' );
-			$objWriter->writeAttribute ( 'cmd', 'togglePause' );
+				$objWriter->startElement ( 'p:cmd' );
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:cmd
+				$objWriter->writeAttribute ( 'type', 'call' );
+				$objWriter->writeAttribute ( 'cmd', 'togglePause' );
 			
-			$objWriter->startElement ( 'p:cBhvr' );
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:cmd/p:cBhvr
+				$objWriter->startElement ( 'p:cBhvr' );
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:cmd/p:cBhvr
 			
-			$objWriter->startElement ( 'p:cTn' );
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:cmd/p:cBhvr/p:cTn
-			$objWriter->writeAttribute ( 'id', $idCount ++ );
-			$objWriter->writeAttribute ( 'dur', '1' );
-			$objWriter->writeAttribute ( 'fill', 'hold' );
-			$objWriter->endElement ();
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:cmd/p:cBhvr
+				$objWriter->startElement ( 'p:cTn' );
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:cmd/p:cBhvr/p:cTn
+				$objWriter->writeAttribute ( 'id', $idCount ++ );
+				$objWriter->writeAttribute ( 'dur', '1' );
+				$objWriter->writeAttribute ( 'fill', 'hold' );
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:cmd/p:cBhvr
 			
-			$objWriter->startElement ( 'p:tgtEl' );
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:cmd/p:cBhvr/p:tgtEl
-			$objWriter->startElement ( 'p:spTgt' );
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:cmd/p:cBhvr/p:tgtEl/p:spTgt
-			$objWriter->writeAttribute ( 'spid', $shapeId );
-			$objWriter->endElement ();
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:cmd/p:cBhvr/p:tgtEl
-			$objWriter->endElement ();
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:cmd/p:cBhvr
+				$objWriter->startElement ( 'p:tgtEl' );
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:cmd/p:cBhvr/p:tgtEl
+				$objWriter->startElement ( 'p:spTgt' );
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:cmd/p:cBhvr/p:tgtEl/p:spTgt
+				$objWriter->writeAttribute ( 'spid', $shapeId );
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:cmd/p:cBhvr/p:tgtEl
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:cmd/p:cBhvr
 			
-			$objWriter->endElement ();
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:cmd
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:cmd
 			
-			$objWriter->endElement ();
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst
 			
-			$objWriter->endElement ();
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn
 			
-			$objWriter->endElement ();
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par
 			
-			$objWriter->endElement ();
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst
 			
-			$objWriter->endElement ();
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn
 			
-			$objWriter->endElement ();
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par
 			
-			$objWriter->endElement ();
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst
 			
-			$objWriter->endElement ();
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn
 			
-			$objWriter->endElement ();
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par
 			
-			$objWriter->endElement ();
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst
 			
-			$objWriter->endElement ();
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn
 			
-			$objWriter->endElement ();
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par
 			
-			$objWriter->startElement ( 'p:nextCondLst' );
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:nextCondLst
+				$objWriter->startElement ( 'p:nextCondLst' );
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:nextCondLst
 			
-			$objWriter->startElement ( 'p:cond' );
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:nextCondLst/p:cond
-			$objWriter->writeAttribute ( 'evt', 'onClick' );
-			$objWriter->writeAttribute ( 'delay', '0' );
+				$objWriter->startElement ( 'p:cond' );
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:nextCondLst/p:cond
+				$objWriter->writeAttribute ( 'evt', 'onClick' );
+				$objWriter->writeAttribute ( 'delay', '0' );
 			
-			$objWriter->startElement ( 'p:tgtEl' );
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:nextCondLst/p:cond/p:tgtEl
-			$objWriter->startElement ( 'p:spTgt' );
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:nextCondLst/p:cond/p:tgtEl/p:spTgt
-			$objWriter->writeAttribute ( 'spid', $shapeId );
-			$objWriter->endElement ();
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:nextCondLst/p:cond/p:tgtEl
-			$objWriter->endElement ();
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:nextCondLst/p:cond
+				$objWriter->startElement ( 'p:tgtEl' );
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:nextCondLst/p:cond/p:tgtEl
+				$objWriter->startElement ( 'p:spTgt' );
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:nextCondLst/p:cond/p:tgtEl/p:spTgt
+				$objWriter->writeAttribute ( 'spid', $shapeId );
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:nextCondLst/p:cond/p:tgtEl
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:nextCondLst/p:cond
 			
-			$objWriter->endElement ();
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:nextCondLst
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:nextCondLst
 			
-			$objWriter->endElement ();
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq
 			
-			$objWriter->endElement ();
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst
 			
-			if ($shape instanceof Video) {
-				$objWriter->startElement ( 'p:video' );
+			
+				if ($shape instanceof Video) {
+					$objWriter->startElement ( 'p:video' );
+					// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:video
+				} elseif ($shape instanceof Audio) {
+					$objWriter->startElement ( 'p:audio' );
+					// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:audio
+				}
+			
+				$objWriter->startElement ( 'p:cMediaNode' );
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:video/p:cMediaNode
+				$objWriter->writeAttribute ( 'vol', 80000 );
+			
+				$objWriter->startElement ( 'p:cTn' );
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:video/p:cMediaNode/p:cTn
+				$objWriter->writeAttribute ( 'id', $idCount ++ );
+				$objWriter->writeAttribute ( 'fill', 'hold' );
+				$objWriter->writeAttribute ( 'display', '0' );
+			
+				$objWriter->startElement ( 'p:stCondLst' );
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:video/p:cMediaNode/p:cTn/p:stCondLst
+			
+				$objWriter->startElement ( 'p:cond' );
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:video/p:cMediaNode/p:cTn/p:stCondLst/p:cond
+				$objWriter->writeAttribute ( 'delay', 'indefinite' );
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:video/p:cMediaNode/p:cTn/p:stCondLst
+			
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:video/p:cMediaNode/p:cTn
+			
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:video/p:cMediaNode
+			
+				$objWriter->startElement ( 'p:tgtEl' );
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:video/p:cMediaNode/p:tgtEl
+				$objWriter->startElement ( 'p:spTgt' );
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:video/p:cMediaNode/p:tgtEl/p:spTgt
+				$objWriter->writeAttribute ( 'spid', $shapeId );
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:video/p:cMediaNode/p:tgtEl
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:video/p:cMediaNode
+			
+				$objWriter->endElement ();
 				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:video
-			} elseif ($shape instanceof Audio) {
-				$objWriter->startElement ( 'p:audio' );
-				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:audio
+				
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst
+				
 			}
 			
-			$objWriter->startElement ( 'p:cMediaNode' );
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:video/p:cMediaNode
-			$objWriter->writeAttribute ( 'vol', 80000 );
 			
-			$objWriter->startElement ( 'p:cTn' );
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:video/p:cMediaNode/p:cTn
-			$objWriter->writeAttribute ( 'id', $idCount ++ );
-			$objWriter->writeAttribute ( 'fill', 'hold' );
-			$objWriter->writeAttribute ( 'display', '0' );
-			
-			$objWriter->startElement ( 'p:stCondLst' );
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:video/p:cMediaNode/p:cTn/p:stCondLst
-			
-			$objWriter->startElement ( 'p:cond' );
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:video/p:cMediaNode/p:cTn/p:stCondLst/p:cond
-			$objWriter->writeAttribute ( 'delay', 'indefinite' );
-			$objWriter->endElement ();
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:video/p:cMediaNode/p:cTn/p:stCondLst
-			
-			$objWriter->endElement ();
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:video/p:cMediaNode/p:cTn
-			
-			$objWriter->endElement ();
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:video/p:cMediaNode
-			
-			$objWriter->startElement ( 'p:tgtEl' );
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:video/p:cMediaNode/p:tgtEl
-			$objWriter->startElement ( 'p:spTgt' );
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:video/p:cMediaNode/p:tgtEl/p:spTgt
-			$objWriter->writeAttribute ( 'spid', $shapeId );
-			$objWriter->endElement ();
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:video/p:cMediaNode/p:tgtEl
-			$objWriter->endElement ();
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:video/p:cMediaNode
-			
-			$objWriter->endElement ();
-			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:video
-			
-			$objWriter->endElement ();
 			// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst
-		}
+			if ($shape instanceof RichText) {
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq
+				$objWriter->startElement ( 'p:seq' );
+				$objWriter->writeAttribute ( 'concurrent', '1' );
+				$objWriter->writeAttribute ( 'nextAc', 'seek' );
+				
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn
+				$objWriter->startElement ( 'p:cTn' );
+				$objWriter->writeAttribute ( 'id', $idCount ++ ); //2
+				$objWriter->writeAttribute ( 'nodeType', 'mainSeq' );
+				$objWriter->writeAttribute ( 'dur', 'indefinite' );
+				
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst
+				$objWriter->startElement ( 'p:childTnLst' );
+				
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par
+				$objWriter->startElement ( 'p:par' );
+				
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn
+				$objWriter->startElement ( 'p:cTn' );
+				$objWriter->writeAttribute ( 'id', $idCount ++ ); //3
+				$objWriter->writeAttribute ( 'fill', 'hold' );
+				
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:stCondLst
+				$objWriter->startElement ( 'p:stCondLst' );
+				
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:stCondLst/p:cond
+				$objWriter->startElement ( 'p:cond' );
+				$objWriter->writeAttribute ( 'delay', 'indefinite' );
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:stCondLst
+				
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn
+				
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst
+				$objWriter->startElement ( 'p:childTnLst' );
+				
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par
+				$objWriter->startElement ( 'p:par' );
+				
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn
+				$objWriter->startElement ( 'p:cTn' );
+				$objWriter->writeAttribute ( 'id', $idCount ++ ); // 4
+				$objWriter->writeAttribute ( 'fill', 'hold' );
+				
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:stCondLst
+				$objWriter->startElement ( 'p:stCondLst' );
+				
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:stCondLst/p:cond
+				$objWriter->startElement ( 'p:cond' );
+				$objWriter->writeAttribute ( 'delay', '0' );
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:stCondLst
+				
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn
+				
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst
+				$objWriter->startElement ( 'p:childTnLst' );
+				
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par
+				$objWriter->startElement ( 'p:par' );
+				
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn
+				$objWriter->startElement ( 'p:cTn' );
+				$objWriter->writeAttribute ( 'id', $idCount ++ ); // 5
+				$objWriter->writeAttribute ( 'nodeType', 'clickEffect' );
+				$objWriter->writeAttribute ( 'fill', 'hold' );
+				$objWriter->writeAttribute ( 'grpId', '0' );
+				$objWriter->writeAttribute ( 'presetSubtype', '2' );
+				$presetClass = ($oAnimation->getAnimEffectTransition() == 'in' ? 'entr' : 'exit');
+				$objWriter->writeAttribute ( 'presetClass', $presetClass);
+				$objWriter->writeAttribute ( 'presetID', '22' );
+				
+
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:stCondLst
+				$objWriter->startElement ( 'p:stCondLst' );
+				
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:stCondLst/p:cond
+				$objWriter->startElement ( 'p:cond' );
+				$objWriter->writeAttribute ( 'delay', '0' );
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:stCondLst
+				
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn
+				
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst
+				$objWriter->startElement ( 'p:childTnLst' );
+				
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:animEffect
+				$objWriter->startElement ( 'p:animEffect' );
+				$objWriter->writeAttribute ( 'filter', $oAnimation->getAnimEffectFilter());
+				$objWriter->writeAttribute ( 'transition', $oAnimation->getAnimEffectTransition());
+				
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:animEffect/p:cBhvr
+				$objWriter->startElement ( 'p:cBhvr' );
+				
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:animEffect/p:cBhvr/p:cTn
+				$objWriter->startElement ( 'p:cTn' );
+				$objWriter->writeAttribute ( 'id', $idCount ++ ); //6
+				$objWriter->writeAttribute ( 'dur', $oAnimation->getDuration() * 1000);
+				
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:animEffect/p:cBhvr
+				
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:animEffect/p:cBhvr/p:tgtEl
+				$objWriter->startElement ( 'p:tgtEl' );
+				
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:animEffect/p:cBhvr/p:tgtEl/p:spTgt
+				$objWriter->startElement ( 'p:spTgt' );
+				$objWriter->writeAttribute ( 'spid', $shapeId );
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:animEffect/p:cBhvr/p:tgtEl
+				
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:animEffect/p:cBhvr
+				
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:animEffect
+				
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst
+				
+
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:set
+				$objWriter->startElement ( 'p:set' );
+				
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:set/p:cBhvr
+				$objWriter->startElement ( 'p:cBhvr' );
+				
+				
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:set/p:cBhvr/p:cTn
+				$objWriter->startElement ( 'p:cTn' );
+				$objWriter->writeAttribute ( 'id', $idCount ++ );
+				$objWriter->writeAttribute ( 'dur', '1' );
+				$objWriter->writeAttribute ( 'fill', 'hold' );
+								
+				
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:set/p:cBhvr/p:cTn/p:stCondLst
+				$objWriter->startElement ( 'p:stCondLst' );
+				
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:set/p:cBhvr/p:cTn/p:stCondLst/p:cond
+				$objWriter->startElement ( 'p:cond' );
+				
+				$delay = ($oAnimation->getAnimEffectTransition() == 'in' ? '0' : ($oAnimation->getDuration() * 1000)-1);
+				$objWriter->writeAttribute ( 'delay', $delay);
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:set/p:cBhvr/p:cTn/p:stCondLst
+				
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:set/p:cBhvr/p:cTn
+				
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:set/p:cBhvr
+				
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:set/p:cBhvr/p:tgtEl
+				$objWriter->startElement ( 'p:tgtEl' );
+				
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:set/p:cBhvr/p:tgtEl/p:spTgt
+				$objWriter->startElement ( 'p:spTgt' );
+				$objWriter->writeAttribute ( 'spid', $shapeId );
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:set/p:cBhvr/p:tgtEl
+				
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:set/p:cBhvr
+				
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:set/p:cBhvr/p:attrNameLst
+				$objWriter->startElement ( 'p:attrNameLst' );
+				
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:set/p:cBhvr/p:attrNameLst/p:attrName
+				$objWriter->writeElement ( 'p:attrName', 'style.visibility' );
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:set/p:cBhvr/p:attrNameLst
+				
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:set/p:cBhvr
+				
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:set
+				
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:set/p:to
+				$objWriter->startElement ( 'p:to' );
+				
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:set/p:to/p:strVal
+				$objWriter->startElement ( 'p:strVal' );
+				$val = ($oAnimation->getAnimEffectTransition() == 'in' ? 'visible' : 'hidden');
+				
+				$objWriter->writeAttribute ( 'val', $val);
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:set/p:to
+				
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:set
+				
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst
+				
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn
+				
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par
+				
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst
+				
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par/p:cTn
+				
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst/p:par
+				
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn/p:childTnLst
+				
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par/p:cTn
+				
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst/p:par
+				
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn/p:childTnLst
+				
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:cTn
+				
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq
+				
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:prevCondLst
+				$objWriter->startElement ( 'p:prevCondLst' );
+				
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:prevCondLst/p:cond
+				$objWriter->startElement ( 'p:cond' );
+				$objWriter->writeAttribute ( 'delay', '0' );
+				$objWriter->writeAttribute ( 'evt', 'onPrev' );
+				
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:prevCondLst/p:cond/p:tgtEl
+				$objWriter->startElement ( 'p:tgtEl' );
+				
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:prevCondLst/p:cond/p:tgtEl/p:sldTgt
+				$objWriter->writeElement ( 'p:sldTgt' , null);
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:prevCondLst/p:cond/p:tgtEl
+				
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:prevCondLst/p:cond
+				
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:prevCondLst
+				
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq
+				
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:nextCondLst
+				$objWriter->startElement ( 'p:nextCondLst' );
+				
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:nextCondLst/p:cond
+				$objWriter->startElement ( 'p:cond' );
+				$objWriter->writeAttribute ( 'delay', '0' );
+				$objWriter->writeAttribute ( 'evt', 'onNext' );
+				
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:nextCondLst/p:cond/p:tgtEl
+				$objWriter->startElement ( 'p:tgtEl' );
+				
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:nextCondLst/p:cond/p:tgtEl/p:sldTgt
+				$objWriter->writeElement ( 'p:sldTgt' , null);
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:nextCondLst/p:cond/p:tgtEl
+				
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:nextCondLst/p:cond
+				
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq/p:nextCondLst
+				
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst/p:seq
+				
+				$objWriter->endElement ();
+				// p:timing/p:tnLst/p:par/p:cTn/p:childTnLst
+				
+			}			
+			
+		} // for each
 		$objWriter->endElement ();
 		// p:timing/p:tnLst/p:par/p:cTn
 		
@@ -835,10 +1133,12 @@ class PptSlides extends AbstractSlide {
 		// p:timing/p:tnLst
 		
 		$objWriter->endElement ();
-		// p:timing
+		// p:timing		
 		
 		$objWriter->endElement ();
 		//
+		
+		
 	}
 	
 	/**
