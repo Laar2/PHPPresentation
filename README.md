@@ -37,8 +37,11 @@ Read more about PHPPresentation:
 - Set printing options (header, footer, page margins, paper size, orientation)
 - Set transitions between slides
 - Output to different file formats: PowerPoint 2007 (.pptx), OpenDocument Presentation (.odp), Serialized Presentation)
-- ## Special in this version: Add Audio and video files without having to repair the PPTX (2010)
-## See the samples 21, 22 and 23 !
+- ## Special in this version: 
+- ## Add Audio and video files without having to repair the PPTX (2010)
+  ## See the samples 21, 22 and 23 !
+- ## RichtextShape with Animation
+  ## See the sample 24
 
 - ... and lots of other things!
 
